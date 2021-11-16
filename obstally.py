@@ -8,6 +8,9 @@
 #################################
 
 
+from gpiozero import LED
+from obswebsocket import obsws, events, requests
+import logging
 import sys
 import time
 import xml.etree.ElementTree as ET
@@ -17,20 +20,17 @@ GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
 GPIO.cleanup()
 
-import logging
 logging.basicConfig(level=logging.INFO)
 
 
 sys.path.append('../')
-from obswebsocket import obsws, events, requests
 
-from gpiozero import LED
 
 tree = ET.parse('tally.xml')
 root = tree.getroot()
 host = root[0].text
 port = root[1].text
-password  = root[2].text
+password = root[2].text
 
 #
 # Scene Config
@@ -56,86 +56,96 @@ pgm_tally_4 = LED(root[14].text)
 def on_switch(message):
     obsscene = message.getSceneName()
     if obsscene == scene1:
-       print ("Kamera 1 aktiv")
-       pgm_tally_1_on()
+        print("Kamera 1 aktiv")
+        pgm_tally_1_on()
     elif obsscene == scene2:
-      print ("Kamera 2 aktiv")
-      pgm_tally_2_on()
+        print("Kamera 2 aktiv")
+        pgm_tally_2_on()
     elif obsscene == scene3:
-     print ("Kamera 3 aktiv")
-     pgm_tally_3_on()
+        print("Kamera 3 aktiv")
+        pgm_tally_3_on()
     elif obsscene == scene4:
-     print ("Kamera 4 aktiv")
-     pgm_tally_4_on()
+        print("Kamera 4 aktiv")
+        pgm_tally_4_on()
     else:
-     print ("Szene ohne Tally:")
-     print (obsscene)
+        print("Szene ohne Tally:")
+        print(obsscene)
+
 
 def on_preview(message):
     pv_scene = message.getSceneName()
     if pv_scene == scene1:
-       print ("Kamera 1 Preview")
-       pv_tally_1_on()
+        print("Kamera 1 Preview")
+        pv_tally_1_on()
     elif pv_scene == scene2:
-      print ("Kamera 2 Preview")
-      pv_tally_2_on()
+        print("Kamera 2 Preview")
+        pv_tally_2_on()
     elif pv_scene == scene3:
-     print ("Kamera 3 Preview")
-     pv_tally_3_on()
+        print("Kamera 3 Preview")
+        pv_tally_3_on()
     elif pv_scene == scene4:
-     print ("Kamera 4 Preview")
-     pv_tally_4_on()
+        print("Kamera 4 Preview")
+        pv_tally_4_on()
     else:
-     print ("Szene ohne Tally:")
-     print (pv_scene)
+        print("Szene ohne Tally:")
+        print(pv_scene)
+
 
 def pv_tally_1_on():
-   pv_tally_1.on()
-   pv_tally_2.off()
-   pv_tally_3.off()
-   pv_tally_4.off()
+    pv_tally_1.on()
+    pv_tally_2.off()
+    pv_tally_3.off()
+    pv_tally_4.off()
+
 
 def pgm_tally_1_on():
-   pgm_tally_1.on()
-   pgm_tally_2.off()
-   pgm_tally_3.off()
-   pgm_tally_4.off()
+    pgm_tally_1.on()
+    pgm_tally_2.off()
+    pgm_tally_3.off()
+    pgm_tally_4.off()
+
 
 def pv_tally_2_on():
-   pv_tally_1.off()
-   pv_tally_2.on()
-   pv_tally_3.off()
-   pv_tally_4.off()
+    pv_tally_1.off()
+    pv_tally_2.on()
+    pv_tally_3.off()
+    pv_tally_4.off()
+
 
 def pgm_tally_2_on():
-   pgm_tally_1.off()
-   pgm_tally_2.on()
-   pgm_tally_3.off()
-   pgm_tally_4.off()
+    pgm_tally_1.off()
+    pgm_tally_2.on()
+    pgm_tally_3.off()
+    pgm_tally_4.off()
+
 
 def pv_tally_3_on():
-   pv_tally_1.off()
-   pv_tally_2.off()
-   pv_tally_3.on()
-   pv_tally_4.off()
+    pv_tally_1.off()
+    pv_tally_2.off()
+    pv_tally_3.on()
+    pv_tally_4.off()
+
 
 def pgm_tally_3_on():
-   pgm_tally_1.off()
-   pgm_tally_2.off()
-   pgm_tally_3.on()
-   pgm_tally_4.off()
+    pgm_tally_1.off()
+    pgm_tally_2.off()
+    pgm_tally_3.on()
+    pgm_tally_4.off()
+
 
 def pv_tally_4_on():
-   pv_tally_1.off()
-   pv_tally_2.off()
-   pv_tally_3.off()
-   pv_tally_4.on()
+    pv_tally_1.off()
+    pv_tally_2.off()
+    pv_tally_3.off()
+    pv_tally_4.on()
+
 
 def pgm_tally_4_on():
-   pgm_tally_1.off()
-   pgm_tally_2.off()
-   pgm_tally_3.off()
-   pgm_tally_4.on()
+    pgm_tally_1.off()
+    pgm_tally_2.off()
+    pgm_tally_3.off()
+    pgm_tally_4.on()
+
 
 ws = obsws(host, port, password)
 ws.register(on_switch, events.SwitchScenes)
@@ -143,8 +153,8 @@ ws.register(on_preview, events.PreviewSceneChanged)
 ws.connect()
 
 try:
-   while True:
-    pass
+    while True:
+        pass
 
 except KeyboardInterrupt:
     pass
