@@ -1,57 +1,63 @@
-# OBSTally
-OBS Tallylights via OBS-Websockets and RPI
+# OBS-Tally
 
-### THIS IS EXPERIMENTAL AND QUICK AND DIRTY
-* But it works really good
+OBS Tally-Lights via OBS-Websockets, Python for SBCs like Raspberry Pi
 
-### Installation
-* Run pip install obs-websocket to install the obs-websocket Library
+THIS WAS MY FIRST BIG PYTHON PROJECT... RE-Write is undergoing.
 
-* Install and Setup NGINX and PHP-Server
+## Description
 
-* Put index.php in /var/www/html/
+So you want Tallys for your OBS? Okay. Grab your Raspberry Pi, 8-Channel Relais Card, some Lights, a PSU for the Lights and some Duct-Tapes and lets go. How you design the Hardware is up to you! This Script sets GPIO-Pins to LOW or HIGH, based on the Scene-State in OBS.
 
-* In index.php change tally.xml-path to match the actual path
 
-* Run index.php from Browser
+## Installation
 
-* Setup OBS-Tally Settings (IP, Password, Port from OBS-Websockets, Scenes and GPIO-Ports)
+```bash
+git clone <repo-url>
+cd repo-folder
+pip install obs-websocket
+```
 
-* Connect LEDs to the matching GPIO and try
 
-* If you want to use OBSTally with an relais-card, you need to use the Inverted-Version
+## Usage
+ run matching Python file
+GG
 
-### License
+```bash
+python obstally.py OR
 
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+python obstally_inverted.py
+```
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+## Access the Webinterface
+Spin-Up Webserver with PHP
 
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
+Put index.php in documents-root (e.g. /var/www/html)
 
-Dieses Programm ist Freie Software: Sie können es unter den Bedingungen
-der GNU General Public License, wie von der Free Software Foundation,
-Version 3 der Lizenz oder (nach Ihrer Wahl) jeder neueren
-veröffentlichten Version, weiter verteilen und/oder modifizieren.
+In index.php change tally.xml-path to match the actual path
 
-Dieses Programm wird in der Hoffnung bereitgestellt, dass es nützlich sein wird, jedoch
-OHNE JEDE GEWÄHR,; sogar ohne die implizite
-Gewähr der MARKTFÄHIGKEIT oder EIGNUNG FÜR EINEN BESTIMMTEN ZWECK.
-Siehe die GNU General Public License für weitere Einzelheiten.
+Go to `http://127.0.0.1:80`, profit!
 
-Sie sollten eine Kopie der GNU General Public License zusammen mit diesem
-Programm erhalten haben. Wenn nicht, siehe <https://www.gnu.org/licenses/>.
 
-### Contribution
-I am:
-* Pyton noob
-* PHP noob
-But it works. If you can improve some of my code, then feel free to push some.
+## Roadmap
 
+### Done ✓
+
+- [x] Make Tally works according to OBS-Scenes
+
+### In Progress
+- [ ] Rewrite everything
+
+### Todo
+
+- [ ] Create new 3D-Models for Housing of Tally
+- [ ] Create new 3D-Models for Housing of Tally-Master / Raspi
+
+## Contributing
+Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+
+Please make sure to update tests as appropriate.
+
+HTBAH-Internals: Contact #technik-grafik in Slack
+
+## License
+[Apache 2.0](https://choosealicense.com/licenses/apache-2.0/)
