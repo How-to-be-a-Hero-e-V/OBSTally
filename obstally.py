@@ -8,23 +8,21 @@
 #################################
 
 
-from gpiozero import LED
-from obswebsocket import obsws, events, requests
 import logging
 import sys
-import time
 import xml.etree.ElementTree as ET
 
 import RPi.GPIO as GPIO
+from obswebsocket import obsws, events
+from pgpiozero import LED
+
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
 GPIO.cleanup()
 
 logging.basicConfig(level=logging.INFO)
 
-
 sys.path.append('../')
-
 
 tree = ET.parse('tally.xml')
 root = tree.getroot()

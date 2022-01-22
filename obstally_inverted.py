@@ -8,23 +8,22 @@
 #################################
 
 
-from gpiozero import LED
-from obswebsocket import obsws, events, requests
 import logging
 import sys
 import time
 import xml.etree.ElementTree as ET
 
 import RPi.GPIO as GPIO
+from gpiozero import LED
+from obswebsocket import obsws, events
+
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
 GPIO.cleanup()
 
 logging.basicConfig(level=logging.INFO)
 
-
 sys.path.append('../')
-
 
 tree = ET.parse('tally.xml')
 root = tree.getroot()
@@ -64,7 +63,6 @@ pgm_tally_1.on()
 pgm_tally_2.on()
 pgm_tally_3.on()
 pgm_tally_4.on()
-
 
 #
 # Intialize all
@@ -169,6 +167,8 @@ def pv_tally_1_on():
     pv_tally_2.on()
     pv_tally_3.on()
     pv_tally_4.on()
+
+
 #   pgm_tally_1.on()
 #  pgm_tally_2.on()
 #   pgm_tally_3.on()

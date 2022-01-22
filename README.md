@@ -6,7 +6,7 @@ THIS WAS MY FIRST BIG PYTHON PROJECT... RE-Write is undergoing.
 
 ## Description
 
-So you want Tallys for your OBS? Okay. Grab your Raspberry Pi, 8-Channel Relais Card, some Lights, a PSU for the Lights and some Duct-Tapes and lets go. How you design the Hardware is up to you! This Script sets GPIO-Pins to LOW or HIGH, based on the Scene-State in OBS.
+So you want Tallys for your OBS? Okay. Grab your Raspberry Pi, 8-Channel Relais Card, some Lights, a PSU for the Lights and some Duct-Tapes and let's go. How you design the Hardware is up to you! This Script sets GPIO-Pins to LOW or HIGH, based on the Scene-State in OBS.
 
 
 ## Installation
@@ -14,17 +14,21 @@ So you want Tallys for your OBS? Okay. Grab your Raspberry Pi, 8-Channel Relais 
 ```bash
 git clone <repo-url>
 cd repo-folder
-pip install obs-websocket
+pip install -r requirements.txt
 ```
 
 
 ## Usage
  run matching Python file
-GG
 
+For LEDs directly on GPIO:
 ```bash
-python obstally.py OR
+python obstally.py
+```
+or
 
+For 8-Chanel Relais Cards:
+```bash
 python obstally_inverted.py
 ```
 

@@ -1,0 +1,2 @@
+gpiozero==1.6.2
+obs_websocket_py==0.5.3
