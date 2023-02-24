@@ -4,234 +4,108 @@
 #################################
 #  Tally Lights for OBS-Studio  #
 #  Using OBS-Websockets         #
-#  (c) 2019 Deniz K. HTBAH e.V. #
+#   Rewritten Version           #
+#  (c) 2023 Deniz K. HTBAH e.V. #
 #################################
 
-
-import logging
-import sys
 import time
 import xml.etree.ElementTree as ET
-
+import logging
 import RPi.GPIO as GPIO
 from gpiozero import LED
-from obswebsocket import obsws, events
+from obswebsocket import obsws, events, requests
 
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
 GPIO.cleanup()
 
-logging.basicConfig(level=logging.INFO)
+LOG_LEVEL = logging.INFO
+logging.basicConfig(level=LOG_LEVEL)
 
-sys.path.append('../')
+XML_FILE = 'tally.xml'
 
-tree = ET.parse('tally.xml')
-root = tree.getroot()
-host = root[0].text
-port = root[1].text
-password = root[2].text
+GPIO_PINS = {
+    'pv_tally_1': 17,
+    'pgm_tally_1': 18,
+    'pv_tally_2': 19,
+    'pgm_tally_2': 20,
+    'pv_tally_3': 21,
+    'pgm_tally_3': 22,
+    'pv_tally_4': 23,
+    'pgm_tally_4': 24,
+}
 
-#
-# Scene Config
-#
-scene1 = root[3].text
-scene2 = root[4].text
-scene3 = root[5].text
-scene4 = root[6].text
+def setup_gpio_pins():
+    for pin in GPIO_PINS.values():
+        GPIO.setup(pin, GPIO.OUT)
+        GPIO.output(pin, True)
 
-#
-# Configure Tallys
-#
-pv_tally_1 = LED(root[7].text)
-pgm_tally_1 = LED(root[8].text)
-pv_tally_2 = LED(root[9].text)
-pgm_tally_2 = LED(root[10].text)
-pv_tally_3 = LED(root[11].text)
-pgm_tally_3 = LED(root[12].text)
-pv_tally_4 = LED(root[13].text)
-pgm_tally_4 = LED(root[14].text)
+def set_tally_leds(state):
+    for pin in GPIO_PINS.values():
+        GPIO.output(pin, not state)
 
-#
-# Set them to OFF (Inverted)
-#
+def parse_xml_file(xml_file):
+    tree = ET.parse(xml_file)
+    root = tree.getroot()
+    return {
+        'host': root[0].text,
+        'port': root[1].text,
+        'password': root[2].text,
+        'scenes': [root[i].text for i in range(3, 7)],
+        'gpio_pins': [root[i].text for i in range(7, 15)],
+    }
 
-pv_tally_1.on()
-pv_tally_2.on()
-pv_tally_3.on()
-pv_tally_4.on()
-pgm_tally_1.on()
-pgm_tally_2.on()
-pgm_tally_3.on()
-pgm_tally_4.on()
-
-#
-# Intialize all
-#
-
-pv_tally_1.off()
-
-time.sleep(0.5)
-
-pv_tally_1.on()
-pv_tally_2.off()
-
-time.sleep(0.5)
-
-pv_tally_2.on()
-pv_tally_3.off()
-
-time.sleep(0.5)
-
-pv_tally_3.on()
-pv_tally_4.off()
-
-time.sleep(0.5)
-
-pv_tally_4.on()
-pgm_tally_1.off()
-
-time.sleep(0.5)
-
-pgm_tally_1.on()
-pgm_tally_2.off()
-
-time.sleep(0.5)
-
-pgm_tally_2.on()
-pgm_tally_3.off()
-
-time.sleep(0.5)
-
-pgm_tally_3.on()
-pgm_tally_4.off()
-
-time.sleep(0.5)
-
-pgm_tally_4.on()
-time.sleep(0.5)
-
-#
-# Set them to OFF (Inverted) once again
-#
-
-pv_tally_1.on()
-pv_tally_2.on()
-pv_tally_3.on()
-pv_tally_4.on()
-pgm_tally_1.on()
-pgm_tally_2.on()
-pgm_tally_3.on()
-pgm_tally_4.on()
-
-
-def on_switch(message):
+def on_switch(message, scene_configs):
     obsscene = message.getSceneName()
-    if obsscene == scene1:
-        print("Kamera 1 aktiv")
-        pgm_tally_1_on()
-    elif obsscene == scene2:
-        print("Kamera 2 aktiv")
-        pgm_tally_2_on()
-    elif obsscene == scene3:
-        print("Kamera 3 aktiv")
-        pgm_tally_3_on()
-    elif obsscene == scene4:
-        print("Kamera 4 aktiv")
-        pgm_tally_4_on()
-    else:
-        print("Szene ohne Tally:")
-        print(obsscene)
+    try:
+        scene_index = scene_configs['scenes'].index(obsscene)
+    except ValueError:
+        logging.debug('Scene without tally: %s', obsscene)
+        return
+    logging.debug('Camera %d active', scene_index + 1)
+    pgm_tally_on(scene_configs, scene_index)
 
-
-def on_preview(message):
+def on_preview(message, scene_configs):
     pv_scene = message.getSceneName()
-    if pv_scene == scene1:
-        print("Kamera 1 Preview")
-        pv_tally_1_on()
-    elif pv_scene == scene2:
-        print("Kamera 2 Preview")
-        pv_tally_2_on()
-    elif pv_scene == scene3:
-        print("Kamera 3 Preview")
-        pv_tally_3_on()
-    elif pv_scene == scene4:
-        print("Kamera 4 Preview")
-        pv_tally_4_on()
-    else:
-        print("Szene ohne Tally:")
-        print(pv_scene)
+    try:
+        scene_index = scene_configs['scenes'].index(pv_scene)
+    except ValueError:
+        logging.debug('Scene without tally: %s', pv_scene)
+        return
+    logging.debug('Camera %d preview', scene_index + 1)
+    pv_tally_on(scene_configs, scene_index)
 
+def pgm_tally_on(scene_configs, index):
+    logging.debug('PGM Tally on for camera %d', index + 1)
+    GPIO.output(int(scene_configs['gpio_pins'][index * 2 + 1]), False)
 
-def pv_tally_1_on():
-    pv_tally_1.off()
-    pv_tally_2.on()
-    pv_tally_3.on()
-    pv_tally_4.on()
+def pv_tally_on(scene_configs, index):
+    logging.debug('PV Tally on for camera %d', index + 1)
+    GPIO.output(int(scene_configs['gpio_pins'][index * 2]), False)
 
+def start_tally():
+    setup_gpio_pins()
+    scene_configs = parse_xml_file(XML_FILE)
+    try:
+        ws = obsws(scene_configs['host'], int(scene_configs['port']), scene_configs['password'])
+        ws.connect()
+        logging.debug('Connected to OBS')
+        for scene in scene_configs['scenes']:
+            ws.register(callback=on_switch, event=events.SwitchScenes)
+            ws.register(callback=on_preview, event=events.PreviewSceneChanged)
+            logging.debug('Registered events for %s', scene)
+        set_tally_leds(True)
+        logging.debug('Tally LEDs set to off')
+        ws.run_forever()
+    except KeyboardInterrupt:
+        logging.debug('Interrupted by user')
+    finally:
+        set_tally_leds(False)
+        logging.debug('Tally LEDs set to on')
+        GPIO.cleanup()
+        logging.debug('Cleaned up GPIO')
+        ws.disconnect()
+        logging.debug('Disconnected from OBS')
 
-#   pgm_tally_1.on()
-#  pgm_tally_2.on()
-#   pgm_tally_3.on()
-#   pgm_tally_4.on()
-
-
-def pgm_tally_1_on():
-    pgm_tally_1.off()
-    pgm_tally_2.on()
-    pgm_tally_3.on()
-    pgm_tally_4.on()
-
-
-def pv_tally_2_on():
-    pv_tally_1.on()
-    pv_tally_2.off()
-    pv_tally_3.on()
-    pv_tally_4.on()
-
-
-def pgm_tally_2_on():
-    pgm_tally_1.on()
-    pgm_tally_2.off()
-    pgm_tally_3.on()
-    pgm_tally_4.on()
-
-
-def pv_tally_3_on():
-    pv_tally_1.on()
-    pv_tally_2.on()
-    pv_tally_3.off()
-    pv_tally_4.on()
-
-
-def pgm_tally_3_on():
-    pgm_tally_1.on()
-    pgm_tally_2.on()
-    pgm_tally_3.off()
-    pgm_tally_4.on()
-
-
-def pv_tally_4_on():
-    pv_tally_1.on()
-    pv_tally_2.on()
-    pv_tally_3.on()
-    pv_tally_4.off()
-
-
-def pgm_tally_4_on():
-    pgm_tally_1.on()
-    pgm_tally_2.on()
-    pgm_tally_3.on()
-    pgm_tally_4.off()
-
-
-ws = obsws(host, port, password)
-ws.register(on_switch, events.SwitchScenes)
-ws.register(on_preview, events.PreviewSceneChanged)
-ws.connect()
-
-try:
-    while True:
-        pass
-
-except KeyboardInterrupt:
-    pass
+if __name__ == '__main__':
+    start_tally()
